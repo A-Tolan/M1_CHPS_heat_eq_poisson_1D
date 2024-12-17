@@ -14,8 +14,8 @@
 # Follow the example of the machine called "ambre" in the 
 # file ambre.mk
 #
-HOSTNAME?=$(shell hostname)
-include $(HOSTNAME).mk
+# HOSTNAME?=$(shell hostname)
+include docker.mk
 
 # 
 # -- Compiler Option
@@ -83,3 +83,9 @@ run_tpPoisson1D_direct:
 
 clean:
 	rm *.o bin/*
+
+Docker_targ : 
+	docker build . -f docker/Dockerfile -t poisson_dock
+
+Docker_run :
+	docker run -ti --rm -v .:/app poisson_dock

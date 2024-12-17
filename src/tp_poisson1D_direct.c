@@ -4,6 +4,7 @@
 /* to solve the Poisson 1D problem        */
 /******************************************/
 #include "lib_poisson1D.h"
+#include <time.h>
 
 #define TRF 0
 #define TRI 1
@@ -27,6 +28,7 @@ int main(int argc,char *argv[])
   double *AB;
 
   double relres;
+  clock_t start, end;
 
   if (argc == 2) {
     IMPLEM = atoi(argv[1]);
@@ -70,18 +72,27 @@ int main(int argc,char *argv[])
 
   /* LU Factorization */
   if (IMPLEM == TRF) {
+    start = clock();
     dgbtrf_(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
+    end = clock();
+    printf("Time for dgbtrf: %lf seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
   }
 
   /* LU for tridiagonal matrix  (can replace dgbtrf_) */
   if (IMPLEM == TRI) {
+    start = clock();
     dgbtrftridiag(&la, &la, &kl, &ku, AB, &lab, ipiv, &info);
+    end = clock();
+    printf("Time for dgbtrftridiag: %lf seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
   }
 
   if (IMPLEM == TRI || IMPLEM == TRF){
     /* Solution (Triangular) */
     if (info==0){
+      start = clock();
       dgbtrs_("N", &la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
+      end = clock();
+      printf("Time for dgbtrs: %lf seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
       if (info!=0){printf("\n INFO DGBTRS = %d\n",info);}
     }else{
       printf("\n INFO = %d\n",info);
@@ -90,7 +101,13 @@ int main(int argc,char *argv[])
 
   /* It can also be solved with dgbsv */
   if (IMPLEM == SV) {
-    // TODO : use dgbsv
+    start = clock();
+    dgbsv_(&la, &kl, &ku, &NRHS, AB, &lab, ipiv, RHS, &la, &info);
+    end = clock();
+    printf("Time for dgbsv: %lf seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
+    if (info != 0) {
+        printf("\nINFO DGBSV = %d\n", info);
+    }
   }
 
   write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "LU.dat");
