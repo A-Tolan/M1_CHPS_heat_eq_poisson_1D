@@ -84,8 +84,8 @@ run_tpPoisson1D_direct:
 clean:
 	rm *.o bin/*
 
-Docker_targ : 
+docker_targ : 
 	docker build . -f docker/Dockerfile -t poisson_dock
 
-Docker_run :
+docker_run :
 	docker run -ti --rm -v .:/app poisson_dock
