@@ -37,7 +37,7 @@ double richardson_alpha_opt(int *la){
 void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, int *lab, int *la, int *ku, int *kl, double *tol, int *maxit, double *resvec, int *nbite) {
     int k = 0;
     double *y = (double *)malloc(*la * sizeof(double));
-    double norm_residual, res, ny;
+    double norm_residual, res= *tol + 1, ny;
 
     printf("\nEntering richardson_alpha\n");
 
@@ -70,53 +70,42 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
 
 // forme general : x^(k+1) = (x^k)+(M^(-1))*(b-A(x^k))
 void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int *la, int *ku, int *kl, double *tol, int *maxit, double *resvec, int *nbite) {
-    int k = 0;
-    double *y = (double *)malloc(*la * sizeof(double));
-    int *ipiv = (int *) calloc(*la, sizeof(int));
-    int info;
+    
+int k = 0;
+double *y = (double *)malloc(*la * sizeof(double));
+double norm_residual, res = *tol + 1, ny;
 
-    double norm_residual, res, ny;
+printf("\nEntering richardson_MB\n");
 
-    printf("\nEntering richardson_MB\n");
+// Calculer la norme de RHS
+ny = cblas_dnrm2(*la, RHS, 1);
+printf("\nNorm of RHS: %lf\n", ny);
 
-    // Calculer la norme de RHS
-    ny = cblas_dnrm2(*la, RHS, 1);
-    printf("Norm of RHS: %lf\n", ny);
+while (res > *tol && k < *maxit) {
+  // Calculer le résidu r = b - A * x
+  cblas_dgbmv(CblasColMajor, CblasNoTrans, *la, *la, *kl, *ku, -1.0, AB, *lab, X, 1, 1.0, y, 1);
+  cblas_dcopy(*la, y, 1, y, 1);
 
-    //dgbtrf
-    dgbtrf_(la, la, kl, ku, AB, lab, ipiv, &info);
-    printf("\ndgbtrf info: %d\n", info);
+  // Résoudre M * z = r pour z
+  LAPACKE_dgbtrs(LAPACK_COL_MAJOR, 'N', *la, *kl, *ku, 1, MB, *lab, NULL, y, *la);
 
-    // Initialiser res
-    res = *tol + 1;
+  // Mettre à jour x^(k+1) = x^k + z
+  cblas_daxpy(*la, 1.0, y, 1, X, 1);
 
-    while (res > *tol && k < *maxit) {
-        // Calculer le résidu r = b - A * x
-        cblas_dgbmv(CblasColMajor, CblasNoTrans, *la, *la, *kl, *ku, -1.0, AB, *lab, X, 1, 1.0, y, 1);
-        cblas_dcopy(*la, RHS, 1, y, 1);
+  // Calculer la norme du résidu
+  norm_residual = cblas_dnrm2(*la, y, 1);
+  res = norm_residual / ny;
+  resvec[k] = res;
 
-        dgbtrs_("N", la, kl, ku, y, AB, lab, ipiv, y, la, &info);
-        printf("dgbtrs info: %d\n", info);
+  printf("\nIteration %d, Residual: %lf\n", k, res);
 
-        // Mettre à jour x^(k+1) = x^k + alpha * r
-        cblas_daxpy(*la, 1.0, y, 1, X, 1);
-
-        // Calculer la norme du résidu
-        norm_residual = cblas_dnrm2(*la, y, 1);
-        res = norm_residual / ny;
-        resvec[k] = res;
-
-        printf("\nIteration %d, Residual: %lf\n", k, res);
-
-        k++;
-    }
-
-    *nbite = k;
-    free(y);
-    free(ipiv);
-    printf("\nExiting richardson_MB\n");
+  k++;
 }
 
+*nbite = k;
+free(y);
+printf("\nExiting richardson_MB\n");
+}
 // M = D
 void extract_MB_jacobi_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
   // Initialiser MB à zéro

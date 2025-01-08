@@ -89,3 +89,12 @@ docker_targ :
 
 docker_run :
 	docker run -ti --rm -v .:/app poisson_dock
+
+valgrind_testenv:
+	valgrind --leak-check=full bin/tp_testenv
+
+valgrind_tpPoisson1D_iter:
+	valgrind --leak-check=full bin/tpPoisson1D_iter
+
+valgrind_tpPoisson1D_direct:
+	valgrind --leak-check=full bin/tpPoisson1D_direct

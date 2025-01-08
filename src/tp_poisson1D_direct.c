@@ -127,5 +127,7 @@ int main(int argc,char *argv[])
   free(EX_SOL);
   free(X);
   free(AB);
+  /////ajout du free ipiv
+  free(ipiv);
   printf("\n\n--------- End -----------\n");
 }
