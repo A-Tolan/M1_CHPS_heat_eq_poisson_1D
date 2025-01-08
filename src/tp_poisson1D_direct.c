@@ -127,7 +127,6 @@ int main(int argc,char *argv[])
   free(EX_SOL);
   free(X);
   free(AB);
-  /////ajout du free ipiv
-  free(ipiv);
+  free(ipiv); // Ajoutez cette ligne pour libérer la mémoire allouée pour ipiv
   printf("\n\n--------- End -----------\n");
 }

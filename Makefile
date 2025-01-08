@@ -28,7 +28,7 @@ TPDIRSRC=$(TPDIR)/src
 
 #
 # -- librairies
-LIBS=${LIBSLOCAL}
+LIBS=${LIBSLOCAL} -llapacke
 
 # -- Include directories
 INCLATLAS=${INCLUDEBLASLOCAL}

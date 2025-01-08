@@ -9,9 +9,9 @@
 On déclare la matrice 2D ou plus, comme un pointeur de type double. On alloue la mémoire en utilisant `malloc` et on stocke les éléments de la matrice de préférence colonne par colonne (column major ordering). Le stocker ligne par ligne (row major ordering) requiert plus de mémoire et de temps que le stockage contigu colonne par colonne.
 
 Exemple matrice \( n \times m \) :
-```c
+
 matrix = (double *)malloc(m * n * sizeof(double));
-```
+
 
 2/ La constante `LAPACK_COL_MAJOR` est une variable qui stocke de façon contiguë les éléments colonne par colonne de la matrice (column-major ordering).
 
@@ -45,17 +45,17 @@ En résumé, `dgbtsv` combine les opérations de `dgbtrf` et `dgbtrs` en une seu
 - **Calcul du résidu \( b - A\hat{x} \)** : Soustrayez les éléments de \( A \cdot \hat{x} \) des éléments de \( b \).
 - **Calcul des normes** : Utilisez `cblas_dnrm2` pour calculer les normes des vecteurs \( b \), \( A \cdot \hat{x} \), et du résidu.
 - **Calcul des erreurs** :
-    - Norme du résidu relatif (arrière) : \(\text{resrel} = \frac{| b - A\hat{x} |}{|A| \cdot |\hat{x}|}\)
-    - Erreur avant : \(\text{erreur avant} = \frac{| b - A\hat{x} |}{|b|}\)
-    - Erreur relative : \(\text{erreur relative} = \frac{| x - \hat{x} |}{|x|}\)
+   - Norme du résidu relatif (arrière) : \(\text{resrel} = \frac{\| b - A\hat{x} \|}{\|A\| \cdot \|\hat{x}\|}\)
+   - Erreur avant : \(\text{erreur avant} = \frac{\| b - A\hat{x} \|}{\|b\|}\)
+   - Erreur relative : \(\text{erreur relative} = \frac{\| x - \hat{x} \|}{\|x\|}\)
 
 Utilisation de `daxpy` pour calculer \( x - \hat{x} \) :
 Pour calculer la différence \( x - \hat{x} \) et sa norme, vous pouvez utiliser `daxpy` :
 - **Calcul de la différence \( x_{\text{exact}} - x_{\text{approx}} \)** :
-```c
+
 cblas_daxpy(n, -1.0, x_approx, 1, x_exact, 1);
 norm_x_diff = norm2(n, x_exact);
-```
+
 
 Exercice 4 : 
 1/
