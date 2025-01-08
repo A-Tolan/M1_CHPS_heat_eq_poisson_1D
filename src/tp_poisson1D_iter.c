@@ -71,6 +71,12 @@ int main(int argc, char *argv[])
   lab = kv + kl + ku + 1;
 
   AB = (double *)malloc(sizeof(double) * lab * la);
+  //mon ajout////////////////////////////////
+  if (AB == NULL) {
+    perror("Failed to allocate memory for AB");
+    exit(EXIT_FAILURE);
+  }
+  /////////////////////////////////////////
   set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
 
   /* uncomment the following to check matrix A */
@@ -104,6 +110,12 @@ int main(int argc, char *argv[])
   ku = 1;
   kl = 1;
   MB = (double *)malloc(sizeof(double) * (lab)*la);
+  //mon ajout /////////////////////////////////////
+  if (MB == NULL) {
+    perror("Failed to allocate memory for MB");
+    exit(EXIT_FAILURE);
+  }
+  ////////////////////////////////////////////////
   if (IMPLEM == JAC)
   {
     extract_MB_jacobi_tridiag(AB, MB, &lab, &la, &ku, &kl, &kv);

@@ -20,8 +20,6 @@ double eigmax_poisson1D(int *la){
   double h = 1.0 / ((double)(n) + 1.0);
   double sin_theta = sin((double)n * M_PI * h / 2.0);
   return 4.0 * sin_theta * sin_theta;
-
-  
 }
 
 double eigmin_poisson1D(int *la){
@@ -29,8 +27,6 @@ double eigmin_poisson1D(int *la){
   double h = 1.0 / ((double)(n) + 1.0);
   double sin_theta = sin(M_PI * h / 2.0);
   return 4.0 * sin_theta * sin_theta;
-
-  
 }
 
 double richardson_alpha_opt(int *la){
@@ -43,8 +39,11 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
     double *y = (double *)malloc(*la * sizeof(double));
     double norm_residual, res, ny;
 
+    printf("\nEntering richardson_alpha\n");
+
     // Calculer la norme de RHS
     ny = cblas_dnrm2(*la, RHS, 1);
+    printf("\nNorm of RHS: %lf\n", ny);
 
     while (res > *tol && k < *maxit) {
         // Calculer le résidu r = b - A * x
@@ -59,11 +58,14 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
         res = norm_residual / ny;
         resvec[k] = res;
 
+        printf("\nIteration %d, Residual: %lf\n", k, res);
+
         k++;
     }
 
     *nbite = k;
     free(y);
+    printf("\nExiting richardson_alpha\n");
 }
 
 // forme general : x^(k+1) = (x^k)+(M^(-1))*(b-A(x^k))
@@ -75,10 +77,15 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
 
     double norm_residual, res, ny;
 
+    printf("\nEntering richardson_MB\n");
+
     // Calculer la norme de RHS
     ny = cblas_dnrm2(*la, RHS, 1);
+    printf("Norm of RHS: %lf\n", ny);
+
     //dgbtrf
     dgbtrf_(la, la, kl, ku, AB, lab, ipiv, &info);
+    printf("\ndgbtrf info: %d\n", info);
 
     // Initialiser res
     res = *tol + 1;
@@ -89,6 +96,7 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
         cblas_dcopy(*la, RHS, 1, y, 1);
 
         dgbtrs_("N", la, kl, ku, y, AB, lab, ipiv, y, la, &info);
+        printf("dgbtrs info: %d\n", info);
 
         // Mettre à jour x^(k+1) = x^k + alpha * r
         cblas_daxpy(*la, 1.0, y, 1, X, 1);
@@ -98,19 +106,46 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
         res = norm_residual / ny;
         resvec[k] = res;
 
+        printf("\nIteration %d, Residual: %lf\n", k, res);
+
         k++;
     }
 
     *nbite = k;
     free(y);
+    free(ipiv);
+    printf("\nExiting richardson_MB\n");
 }
 
 // M = D
 void extract_MB_jacobi_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
+  // Initialiser MB à zéro
+  for (int i = 0; i < (*lab) * (*la); i++) {
+    MB[i] = 0.0;
+  }
+
+  // Extraire la diagonale principale de AB et la placer dans MB
+  for (int i = 0; i < *la; i++) {
+    MB[*kv + i * (*lab)] = AB[*kv + i * (*lab)];
+  }
 }
 
 //  M = D-E
 void extract_MB_gauss_seidel_tridiag(double *AB, double *MB, int *lab, int *la,int *ku, int*kl, int *kv){
+  // Initialiser MB à zéro
+  for (int i = 0; i < (*lab) * (*la); i++) {
+    MB[i] = 0.0;
+  }
+
+  // Extraire la diagonale principale et la sous-diagonale de AB et les placer dans MB
+  for (int i = 0; i < *la; i++) {
+    // Diagonale principale
+    MB[*kv + i * (*lab)] = AB[*kv + i * (*lab)];
+    // Sous-diagonale
+    if (i > 0) {
+      MB[(*kv - 1) + i * (*lab)] = -AB[(*kv - 1) + i * (*lab)];
+    }
+  }
 }
 
 

@@ -63,7 +63,12 @@ int main(int argc,char *argv[])
   lab=kv+kl+ku+1;
 
   AB = (double *) malloc(sizeof(double)*lab*la);
-
+//mon ajout////////////////////////////////////////
+  if (AB == NULL) {
+    perror("Failed to allocate memory for AB");
+    exit(EXIT_FAILURE);
+  }
+  ////////////////////////////////////////////////
   set_GB_operator_colMajor_poisson1D(AB, &lab, &la, &kv);
   write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "AB.dat");
 
